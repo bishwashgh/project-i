@@ -6,7 +6,10 @@ import { ActiveUser } from 'src/iam/decorators/active-user.decorator';
 import type { ActiveUserData } from 'src/iam/interfaces/active-user-data.interface';
 import { Roles } from 'src/iam/authorization/decorators/roles.decorator';
 import { Role } from 'src/users/enums/role.enums';
+import { Auth } from 'src/iam/authentication/decorators/auth.decorator';
+import { AuthType } from 'src/iam/authentication/enums/auth-type.enum';
 
+@Auth(AuthType.Bearer,AuthType.ApiKey)
 @Controller('venue')
 export class VenueController {
   constructor(private readonly venueService: VenueService) {}
