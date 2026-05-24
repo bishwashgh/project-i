@@ -25,15 +25,17 @@ export class UsersService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-    const user = await this.userRepository.preload({
-      ...updateUserDto,
-      id:+id,
-    });
-    if(!user){
-      throw new NotFoundException(`User #${id} not found`);
-    }
-    return this.userRepository.save(user);
+  const { role, ...safeDto } = updateUserDto as any;
+
+  const user = await this.userRepository.preload({
+    ...safeDto,
+    id: +id,
+  });
+  if (!user) {
+    throw new NotFoundException(`User #${id} not found`);
   }
+  return this.userRepository.save(user);
+}
 
   async remove(id: number) {
     const user = await this.findOne(id);
