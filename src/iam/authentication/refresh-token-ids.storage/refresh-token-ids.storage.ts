@@ -9,8 +9,13 @@ export class invalidatedRefreshTokenError extends Error{
 @Injectable()
 export class RefreshTokenIdsStorage implements OnApplicationBootstrap,OnApplicationShutdown {
     private redisClient: Redis = new Redis;
+    const redisUrl = process.env.REDIS_URL;
+    if (!redisUrl) {
+        throw new Error('REDIS_URL is missing');
+    }
+    this.redisClient = new Redis(redisUrl);
     onApplicationBootstrap() {
-        this.redisClient = new Redis(process.env.REDIS_URL);
+        this.redisClient = new Redis(redisUrl);
     }
     onApplicationShutdown(signal?: string) {
         return this.redisClient.quit();
