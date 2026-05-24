@@ -40,15 +40,13 @@ export class UsersController {
     const currentUser = request.user;
     const currentUserId = currentUser.sub || currentUser.id;
 
-    // Prevent non-admins from changing the `role` field
-    if ((updateUserDto as any).role && currentUser.role !== Role.ADMIN) {
-      throw new ForbiddenException('You are not authorized to change roles.');
-    }
-
-    // Only owner or admin can update the record
+    
     if (currentUserId !== +id && currentUser.role !== Role.ADMIN) {
       throw new ForbiddenException('You are not authorized to update other users data.');
     }
+    if ((updateUserDto as any).role && currentUser.role !== Role.ADMIN) {
+    delete (updateUserDto as any).role;
+  }
 
     return this.usersService.update(+id, updateUserDto);
   }
