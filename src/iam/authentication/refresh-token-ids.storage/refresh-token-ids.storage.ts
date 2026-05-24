@@ -34,7 +34,7 @@ export class RefreshTokenIdsStorage
     const storedId = await this.redisClient.get(this.getKey(userId));
 
     if (storedId !== tokenId) {
-      throw new InvalidatedRefreshTokenError();
+      throw new invalidatedRefreshTokenError();
     }
 
     return storedId === tokenId;
