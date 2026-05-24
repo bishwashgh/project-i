@@ -6,9 +6,15 @@ import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { IamModule } from './iam/iam.module';
 import { ConfigModule } from '@nestjs/config';
+import { BookingsModule } from './bookings/bookings.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
-  imports: [ConfigModule.forRoot(),VenueModule, UsersModule,TypeOrmModule.forRoot({
+  imports: [ConfigModule.forRoot(
+    {
+      isGlobal: true ,
+    }
+  ),VenueModule, UsersModule,TypeOrmModule.forRoot({
     type: 'postgres',
     host: 'localhost',
     port: 5432,
@@ -16,8 +22,8 @@ import { ConfigModule } from '@nestjs/config';
     password: 'pass123',
     database: 'postgres',
     autoLoadEntities: true,
-    synchronize:true,
-  }), IamModule
+    synchronize:false,
+  }), IamModule, BookingsModule, PaymentsModule
   ],
   controllers: [AppController],
   providers: [AppService],

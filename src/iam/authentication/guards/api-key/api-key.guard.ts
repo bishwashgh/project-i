@@ -1,7 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { Request } from 'express';
-import { ApiKeysService } from '../../api-keys.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ApiKey } from 'src/users/api-keys/entities/api-key.entity/api-key.entity';
 import { Repository } from 'typeorm';
@@ -9,6 +8,7 @@ import { REQUEST_USER_KEY } from 'src/iam/iam.constants';
 import { Role } from 'src/users/enums/role.enums';
 import { Action } from 'rxjs/internal/scheduler/Action';
 import { ActiveUserData } from 'src/iam/interfaces/active-user-data.interface';
+import { ApiKeysService } from '../../userapi/api-keys.service';
 
 @Injectable()
 export class ApiKeyGuard implements CanActivate {

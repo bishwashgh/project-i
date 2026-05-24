@@ -22,6 +22,12 @@ export class User {
     @Column({ enum: Role,default:Role.CUSTOMER})
     role!: Role;
 
+    @Column({default: false})
+    isTfaEnabled!:boolean;
+
+    @Column({nullable:true})
+    tfaSecret!:string;
+
     @Column({nullable: true})
     googleId!: string;
 

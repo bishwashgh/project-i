@@ -23,7 +23,6 @@ export class VenueController {
   
   @Get()
   findAll(@ActiveUser() user: ActiveUserData) {
-    console.log(user);
     return this.venueService.findAll();
   }
 
@@ -35,7 +34,7 @@ export class VenueController {
   @Roles(Role.ADMIN)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateVenueDto: UpdateVenueDto) {
-    return this.venueService.update(+id, updateVenueDto);
+    return this.venueService.update(id, updateVenueDto);
   }
 
   @Roles(Role.ADMIN)

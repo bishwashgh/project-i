@@ -13,6 +13,8 @@ import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { invalidatedRefreshTokenError, RefreshTokenIdsStorage } from './refresh-token-ids.storage/refresh-token-ids.storage';
 import { randomUUID } from 'crypto';
 import { error } from 'console';
+import { OtpAuthenticationService } from './otp-gooleauthenticator/otp-authentication.service';
+import { SignupOtpService } from './signup-otp/signup-otp.service';
 
 @Injectable()
 export class AuthenticationService {
@@ -23,26 +25,45 @@ export class AuthenticationService {
     @Inject(jwtConfig.KEY)
     private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
     private readonly refreshTokenIdsStorage: RefreshTokenIdsStorage,
+    private readonly otpAuthService:OtpAuthenticationService,
+    private readonly signupOtpService: SignupOtpService,
   ) {}
 
   async signUp(signUpDto: SignUpDto) {
-    try {
-      const user = new User();
-      user.name = signUpDto.name;
-      user.email = signUpDto.email;
-      user.password = await this.hashingService.hash(signUpDto.password);
-
-      await this.usersRepository.save(user);
-    } catch (err) {
-      const pgUniqueViolationErrorCode = '23505';
-
-      if (err instanceof QueryFailedError && (err as any).code === pgUniqueViolationErrorCode) {
-        throw new ConflictException('Email already exists');
-      }
-
-      throw err;
-    }
+  // 1) if user already exists, stop
+  const existing = await this.usersRepository.findOneBy({ email: signUpDto.email });
+  if (existing) {
+    throw new ConflictException('Email already exists');
   }
+
+  const passwordHash = await this.hashingService.hash(signUpDto.password);
+
+  
+  const { id: challengeId } = await this.signupOtpService.createAndSend({
+    email: signUpDto.email,
+    name: signUpDto.name,
+    passwordHash,
+  });
+
+  
+  return { otpRequired: true, challengeId };
+}
+
+async verifySignupOtp(dto: { challengeId: string; otp: string }) {
+  const pending = await this.signupOtpService.verifyAndConsume(dto.challengeId, dto.otp);
+
+  const exists = await this.usersRepository.findOneBy({ email: pending.email });
+  if (exists) throw new ConflictException('Email already exists');
+
+  const user = new User();
+  user.name = pending.name;
+  user.email = pending.email;
+  user.password = pending.passwordHash;
+
+  await this.usersRepository.save(user);
+
+  return this.generateTokens(user); // auto-login (optional)
+}
 
   async signIn(signInDto: SignInDto) {
     const user = await this.usersRepository.findOneBy({ email: signInDto.email });
@@ -56,11 +77,24 @@ export class AuthenticationService {
     if (!isEqual) {
       throw new UnauthorizedException('Password does not match');
     }
+        if(user.isTfaEnabled){
+      if (!signInDto.tfaCode) {
+        throw new UnauthorizedException('2FA code is required for this user');
+      }
+
+      const isValid = this.otpAuthService.verifyCOde(
+        signInDto.tfaCode,
+        user.tfaSecret,
+      );
+      if(!isValid){
+        throw new UnauthorizedException('Invalid 2FA code');
+      }
+    }
 
     return await this.generateTokens(user);
   }
 
-    async generateTokens(user: User) {
+   async generateTokens(user: User) {
         const refreshTokenId = randomUUID();
         const [accessToken, refreshToken] = await Promise.all([this.signToken<Partial<ActiveUserData>>(user.id, this.jwtConfiguration.accessTokenTtl, { email: user.email,role: user.role }),
         this.signToken(user.id, this.jwtConfiguration.refreshTokenTtl,{

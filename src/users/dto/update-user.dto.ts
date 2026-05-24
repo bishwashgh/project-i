@@ -1,4 +1,16 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateUserDto } from './create-user.dto';
+import { Column,PrimaryGeneratedColumn } from 'typeorm';
 
-export class UpdateUserDto extends PartialType(CreateUserDto) {}
+export class UpdateUserDto {
+    @PrimaryGeneratedColumn()
+    id!: number;
+    
+    @Column()
+    name!: string;
+    
+    @Column({ unique: true })
+    email!: string;
+    
+    @Column({ nullable: true})
+    password!: string;
+    
+}
