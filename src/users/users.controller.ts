@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ForbiddenException, Req } from '@nestjs/common';
+import { Controller, Get, Patch, Param, Delete, ForbiddenException, Req, Body } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Role } from './enums/role.enums';
@@ -20,7 +20,7 @@ export class UsersController {
   @Get(':id')
   findOne(
     @Param('id') id: string,
-    @Req() request: any 
+    @Req() request: any,
   ) {
     const currentUser = request.user;
     const currentUserId = currentUser.sub || currentUser.id;
@@ -33,17 +33,19 @@ export class UsersController {
 
   @Patch(':id')
   update(
-    @Param('id') id: string, 
+    @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
-    @Req() request: any 
+    @Req() request: any,
   ) {
-    const currentUser = request.user; 
-
+    const currentUser = request.user;
     const currentUserId = currentUser.sub || currentUser.id;
 
-    if ('role' in (updateUserDto as any) && currentUser.role !== Role.ADMIN) {
-    throw new ForbiddenException('You are not authorized to change roles.');
-      
+    // Prevent non-admins from changing the `role` field
+    if ((updateUserDto as any).role && currentUser.role !== Role.ADMIN) {
+      throw new ForbiddenException('You are not authorized to change roles.');
+    }
+
+    // Only owner or admin can update the record
     if (currentUserId !== +id && currentUser.role !== Role.ADMIN) {
       throw new ForbiddenException('You are not authorized to update other users data.');
     }
