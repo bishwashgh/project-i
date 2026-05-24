@@ -16,11 +16,11 @@ import { PaymentsModule } from './payments/payments.module';
     }
   ),VenueModule, UsersModule,TypeOrmModule.forRoot({
     type: 'postgres',
-    host: 'localhost',
+    host: 'dpg-d887jneq1p3s73br96r0-a',
     port: 5432,
-    username: 'postgres',
-    password: 'pass123',
-    database: 'postgres',
+    username: 'ems_db_t3mg_user',
+    password: 'nNzmpJbgt2gyu7HOSGKV6QDI91q3y9Go',
+    database: 'ems_db_t3mg',
     autoLoadEntities: true,
     synchronize:false,
   }), IamModule, BookingsModule, PaymentsModule
