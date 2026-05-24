@@ -41,6 +41,9 @@ export class UsersController {
 
     const currentUserId = currentUser.sub || currentUser.id;
 
+    if ('role' in (updateUserDto as any) && currentUser.role !== Role.ADMIN) {
+    throw new ForbiddenException('You are not authorized to change roles.');
+      
     if (currentUserId !== +id && currentUser.role !== Role.ADMIN) {
       throw new ForbiddenException('You are not authorized to update other users data.');
     }
