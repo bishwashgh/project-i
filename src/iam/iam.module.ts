@@ -69,7 +69,7 @@ import { SessionAuthenticationController } from './authentication/sessionauth/se
 })
 export class IamModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    const redisClient = createClient({ url: 'redis://localhost:6379' });
+    const redisClient = createClient({ url: 'redis://default:xSMNyDSOwCXOfUpOOmvUgskaJjiRlMHR@redis.railway.internal:6379' });
     redisClient.connect().catch(console.error);
     consumer
      .apply(
