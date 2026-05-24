@@ -11,7 +11,7 @@ export class RefreshTokenIdsStorage implements OnApplicationBootstrap,OnApplicat
     private redisClient: Redis = new Redis;
     onApplicationBootstrap() {
         this.redisClient = new Redis({
-          host:'localhost',
+          host:'redis.railway.internal',
           port:6379,
         });
     }
