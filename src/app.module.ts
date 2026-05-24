@@ -16,11 +16,7 @@ import { PaymentsModule } from './payments/payments.module';
     }
   ),VenueModule, UsersModule,TypeOrmModule.forRoot({
     type: 'postgres',
-    host: 'postgres.railway.internal',
-    port: 5432,
-    username: 'postgres',
-    password: 'PHtdTBFkfamCAoNJIdCRasNPSAGXPuUB',
-    database: 'railway',
+    url:process.env.DATABASE_URL,
     autoLoadEntities: true,
     synchronize:false,
   }), IamModule, BookingsModule, PaymentsModule
