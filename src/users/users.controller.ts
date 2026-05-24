@@ -32,24 +32,24 @@ export class UsersController {
   }
 
   @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateUserDto: UpdateUserDto,
-    @Req() request: any,
-  ) {
-    const currentUser = request.user;
-    const currentUserId = currentUser.sub || currentUser.id;
+update(
+  @Param('id') id: string,
+  @Body() updateUserDto: UpdateUserDto,
+  @Req() request: any,
+) {
+  const currentUser = request.user;
+  const currentUserId = currentUser.sub || currentUser.id;
 
-    
-    if (currentUserId !== +id && currentUser.role !== Role.ADMIN) {
-      throw new ForbiddenException('You are not authorized to update other users data.');
-    }
-    if ((updateUserDto as any).role && currentUser.role !== Role.ADMIN) {
-    delete (updateUserDto as any).role;
+  if (currentUserId !== +id && currentUser.role !== Role.ADMIN) {
+    throw new ForbiddenException('You are not authorized to update other users data.');
   }
 
-    return this.usersService.update(+id, updateUserDto);
+  if ('role' in updateUserDto && currentUser.role !== Role.ADMIN) {
+    throw new ForbiddenException('You are not authorized to change roles.');
   }
+
+  return this.usersService.update(+id, updateUserDto);
+}
 
   @Roles(Role.ADMIN)
   @Delete(':id')
