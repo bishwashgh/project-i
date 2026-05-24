@@ -19,7 +19,7 @@ import { PaymentsModule } from './payments/payments.module';
     host: 'postgres.railway.internal',
     port: 5432,
     username: 'postgres',
-    password: 'sFOuHDMkVsQiivapQDLcnmxoesjzMIYC',
+    password: 'PHtdTBFkfamCAoNJIdCRasNPSAGXPuUB',
     database: 'railway',
     autoLoadEntities: true,
     synchronize:false,
