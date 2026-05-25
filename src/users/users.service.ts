@@ -4,12 +4,14 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
+import { HashingService } from 'src/iam/hashing/hashing.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository:Repository<User>,
+    private readonly hashingService: HashingService,
   ){}
 
   findAll() {
@@ -25,17 +27,21 @@ export class UsersService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-  const user = await this.userRepository.preload({
-    ...updateUserDto,
-    id: +id,
-  });
+    if (updateUserDto.password) {
+      updateUserDto.password = await this.hashingService.hash(updateUserDto.password);
+    }
 
-  if (!user) {
-    throw new NotFoundException(`User #${id} not found`);
+    const user = await this.userRepository.preload({
+      ...updateUserDto,
+      id: +id,
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User #${id} not found`);
+    }
+
+    return this.userRepository.save(user);
   }
-
-  return this.userRepository.save(user);
-}
 
   async remove(id: number) {
     const user = await this.findOne(id);
