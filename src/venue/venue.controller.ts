@@ -48,21 +48,28 @@ export class VenueController {
   @Roles(Role.ADMIN)
   @Post()
   @UseInterceptors(
-    FilesInterceptor('images', 4, { /* your existing multer config */ }),
+    FilesInterceptor('images', 4, {
+      storage: diskStorage({
+        destination: './uploads/venues',
+        filename: (_req, file, cb) => {
+          const name = randomUUID();
+          const fileExt = extname(file.originalname);
+          cb(null, `${name}${fileExt}`);
+        },
+      }),
+      fileFilter: (_req, file, cb) => {
+        if (!file.mimetype.startsWith('image/')) {
+          cb(new BadRequestException('Only image files are allowed'), false);
+        } else {
+          cb(null, true);
+        }
+      },
+      limits: { fileSize: 5 * 1024 * 1024 },
+    }),
   )
-  async create(
-    @Req() req: Request,
-    @UploadedFiles() files: Express.Multer.File[],
-    @Body() createVenueDto: CreateVenueDto,
-  ) {
-    console.log('--- CREATE VENUE LOG ---');
-    console.log('req.headers.authorization:', req.headers['authorization']);
-    console.log('req.body (raw):', req.body);
-    console.log('createVenueDto (transformed):', createVenueDto);
-    console.log('uploaded files:', files && files.map(f => ({ originalname: f.originalname, filename: f.filename, size: f.size })));
-    console.log('------------------------');
-
-    return this.venueService.create({ ...createVenueDto, images: (files || []).map(f => `/uploads/venues/${f.filename}`) });
+  async create(@UploadedFiles() files: Express.Multer.File[], @Body() createVenueDto: CreateVenueDto) {
+    const imagePaths = (files || []).map(f => `/uploads/venues/${f.filename}`);
+    return this.venueService.create({ ...createVenueDto, images: imagePaths });
   }
 
   @Get()
