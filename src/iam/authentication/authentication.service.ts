@@ -77,7 +77,7 @@ async verifySignupOtp(dto: { challengeId: string; otp: string }) {
     if (!isEqual) {
       throw new UnauthorizedException('Password does not match');
     }
-        if(user.isTfaEnabled){
+    if(user.isTfaEnabled){
       if (!signInDto.tfaCode) {
         throw new UnauthorizedException('2FA code is required for this user');
       }

@@ -44,6 +44,21 @@ export class BookingsService {
 
     const days = this.computeInclusiveDays(dto.startDate, dto.endDate);
 
+    const conflict = await this.bookingsRepo
+    .createQueryBuilder('booking')
+    .innerJoin('booking.venue', 'venue')
+    .where('venue.id = :venueId', { venueId: dto.venueId })
+    .andWhere('booking.status != :cancelled', { cancelled: BookingStatus.CANCELLED })
+    .andWhere('booking.startDate <= :endDate AND booking.endDate >= :startDate', {
+      startDate: dto.startDate,
+      endDate: dto.endDate,
+    })
+    .getOne();
+
+    if (conflict) {
+     throw new BadRequestException('Venue is already booked for the selected dates');
+    }
+
     const basePrice = Number((venue as any).basePrice);
     if (!Number.isFinite(basePrice) || basePrice <= 0) {
       throw new BadRequestException('Venue basePrice is invalid');
