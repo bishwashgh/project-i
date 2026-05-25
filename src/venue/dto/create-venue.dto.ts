@@ -1,38 +1,43 @@
 import { PrimaryGeneratedColumn, Column } from "typeorm";
 import { VenueType } from "../entities/venue.entity";
-import { IsEmail, IsNumber, IsPhoneNumber, Matches } from "class-validator";
+import { IsEmail, IsInt, IsNumber, IsOptional, IsPhoneNumber, IsString, Matches, Min } from "class-validator";
+import { Type } from "class-transformer";
 
 export class CreateVenueDto {
-       @PrimaryGeneratedColumn()
-        id!:number;
     
-        @Column({type:'varchar',length:150})
+        @IsString()
         name!:string;
     
         @Column({type:'enum',enum:VenueType,default:VenueType.CONFERENCE_HALL})
         type!:VenueType;
     
-        @Column()
-        @IsNumber()
+        @Type(() => Number)
+        @IsInt()
+        @Min(1)
         capacity!:number;
     
-        @Column({nullable:true})
+        @IsOptional()
+        @IsString()
         description!:string
     
-        @Column({nullable:false})
+        
         @IsEmail()
         email!:string;
     
-        @Column({nullable:false})
+        
         @IsPhoneNumber('NP')
         phone!:string;
     
-        @Column({nullable:false})
+        @IsString()
         address!:string;
 
-        @Column({ type: 'int', default: 0 })
+        @Type(() => Number)
+        @IsInt()
+        @Min(0)
         basePrice!: number;
 
-        @Column({ type: 'text', array: true, nullable: true })
+        @IsOptional()
+        @Type(() => Array)
+        @IsString({ each: true })
         images?: string[];
 }
