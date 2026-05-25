@@ -65,7 +65,7 @@ import { SessionAuthenticationController } from './authentication/sessionauth/se
     SignupOtpService,
   ],
   controllers: [AuthenticationController, GoogleAuthenticationController, SessionAuthenticationController],
-  exports:[AccessTokenGuard,JwtModule, ConfigModule],
+  exports:[AccessTokenGuard,JwtModule, ConfigModule,HashingService],
 })
 export class IamModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
