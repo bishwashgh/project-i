@@ -12,10 +12,10 @@ export class VenueService {
     private readonly venueRepository: Repository<Venue>,
   ){}
 
-  create(createVenueDto: CreateVenueDto) {
-    const venue = this.venueRepository.create(createVenueDto);
-    return this.venueRepository.save(venue);
-  }
+  async create(createVenueDto: CreateVenueDto & { images?: string[] }) {
+  const venue = this.venueRepository.create(createVenueDto);
+  return this.venueRepository.save(venue);
+}
 
   findAll() {
     return this.venueRepository.find();

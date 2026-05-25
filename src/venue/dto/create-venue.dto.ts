@@ -32,4 +32,7 @@ export class CreateVenueDto {
 
         @Column({ type: 'int', default: 0 })
         basePrice!: number;
+
+        @Column({ type: 'text', array: true, nullable: true })
+        images?: string[];
 }
