@@ -4,9 +4,11 @@ import { UsersController } from './users.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { ApiKey } from './api-keys/entities/api-key.entity/api-key.entity';
+import { IamModule } from 'src/iam/iam.module';
+
 
 @Module({
-  imports:[TypeOrmModule.forFeature([User,ApiKey])],
+  imports:[TypeOrmModule.forFeature([User,ApiKey]),IamModule],
   controllers: [UsersController],
   providers: [UsersService],
 })
