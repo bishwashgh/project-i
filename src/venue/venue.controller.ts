@@ -17,33 +17,6 @@ import { extname } from 'path';
 @Controller('venue')
 export class VenueController {
   constructor(private readonly venueService: VenueService) {}
-  
-  // @Roles(Role.ADMIN)
-  // @Post()
-  // @UseInterceptors(
-  //   FilesInterceptor('images', 4, {
-  //     storage: diskStorage({
-  //       destination: './uploads/venues',
-  //       filename: (_req, file, cb) => {
-  //         const name = randomUUID();
-  //         const fileExt = extname(file.originalname);
-  //         cb(null, `${name}${fileExt}`);
-  //       },
-  //     }),
-  //     fileFilter: (_req, file, cb) => {
-  //       if (!file.mimetype.startsWith('image/')) {
-  //         cb(new BadRequestException('Only image files are allowed'), false);
-  //       } else {
-  //         cb(null, true);
-  //       }
-  //     },
-  //     limits: { fileSize: 5 * 1024 * 1024 }, // 5MB per file
-  //   }),
-  // )
-  // async create(@UploadedFiles() files: Express.Multer.File[], @Body() createVenueDto: CreateVenueDto) {
-  //   const imagePaths = (files || []).map(f => `/uploads/venues/${f.filename}`);
-  //   return this.venueService.create({ ...createVenueDto, images: imagePaths });
-  // }
 
   @Roles(Role.ADMIN)
   @Post()
