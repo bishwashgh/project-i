@@ -9,6 +9,7 @@ import { ConfigModule } from '@nestjs/config';
 import { BookingsModule } from './bookings/bookings.module';
 import { PaymentsModule } from './payments/payments.module';
 
+//Main Module  of the app
 @Module({
   imports: [ConfigModule.forRoot(
     {
