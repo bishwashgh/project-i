@@ -10,7 +10,7 @@ import { BookingStatus } from './enum/bookingstatus.enum';
 import { ActiveUser } from 'src/iam/decorators/active-user.decorator';
 import { Role } from 'src/users/enums/role.enums';
 
-
+//Actual Venue Booking logic
 @Injectable()
 export class BookingsService {
   constructor(
