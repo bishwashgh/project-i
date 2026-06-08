@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { BookingStatus } from '../enum/bookingstatus.enum';
 
+//Booking entity
 @Entity('bookings')
 export class Booking {
   @PrimaryGeneratedColumn()
