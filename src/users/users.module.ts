@@ -6,7 +6,7 @@ import { User } from './entities/user.entity';
 import { ApiKey } from './api-keys/entities/api-key.entity/api-key.entity';
 import { IamModule } from 'src/iam/iam.module';
 
-
+//User module
 @Module({
   imports:[TypeOrmModule.forFeature([User,ApiKey]),IamModule],
   controllers: [UsersController],
