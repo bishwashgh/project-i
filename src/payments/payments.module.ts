@@ -7,6 +7,7 @@ import { PaymentsService } from './payments.service';
 import { PaymentsController } from './payments.controller';
 import { Booking } from 'src/bookings/entities/booking.entity';
 
+//payments module
 @Module({
   imports: [
     ConfigModule,
