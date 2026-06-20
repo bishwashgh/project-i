@@ -33,7 +33,7 @@ export class RefreshTokenIdsStorage
 
     await this.redisClient.setex(
       tokenKey,
-      this.TOKEN_EXPIRY, 
+      this.TOKEN_EXPIRY,
       JSON.stringify({
         userId,
         tokenId,
@@ -43,7 +43,7 @@ export class RefreshTokenIdsStorage
     );
 
     await this.redisClient.sadd(userSetKey, tokenId);
-    await this.redisClient.expire(userSetKey, this.TOKEN_EXPIRY); 
+    await this.redisClient.expire(userSetKey, this.TOKEN_EXPIRY);
 
     await this.enforceSessionLimit(userId);
   }
@@ -52,7 +52,7 @@ export class RefreshTokenIdsStorage
     const userSetKey = this.getSetKey(userId);
     const tokenCount = await this.redisClient.scard(userSetKey);
 
-    if (tokenCount > this.MAX_DEVICES) { 
+    if (tokenCount > this.MAX_DEVICES) {
       const tokens = await this.redisClient.smembers(userSetKey);
       const tokensToRemove = tokens.slice(0, tokenCount - this.MAX_DEVICES);
 
@@ -91,10 +91,21 @@ export class RefreshTokenIdsStorage
     return true;
   }
 
-  async invalidate(userId: number): Promise<void> {
-    await this.redisClient.del(this.getKey(userId));
+  async invalidateOne(userId: number, tokenId: string): Promise<void> {
+    const userSetKey = this.getSetKey(userId);
+    const tokenKey = this.getTokenKey(userId, tokenId);
+
+    const tokenData = await this.redisClient.get(tokenKey);
+    if (tokenData) {
+      const data = JSON.parse(tokenData);
+      data.isValid = false;
+      data.invalidatedAt = new Date().toISOString();
+      await this.redisClient.setex(tokenKey, 3600, JSON.stringify(data));
+    }
+    await this.redisClient.srem(userSetKey, tokenId);
   }
 
+  
   async invalidateAll(userId: number): Promise<void> {
     const userSetKey = this.getSetKey(userId);
     const tokenIds = await this.redisClient.smembers(userSetKey);
@@ -107,9 +118,6 @@ export class RefreshTokenIdsStorage
     await this.redisClient.del(userSetKey);
   }
 
-  private getKey(userId: number): string {
-    return `user-${userId}`;
-  }
 
   private getSetKey(userId: number): string {
     return `user:${userId}:tokens`;

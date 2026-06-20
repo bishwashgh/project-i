@@ -125,8 +125,8 @@ async verifySignupOtp(dto: { challengeId: string; otp: string }) {
     );
 
     if (isValid) {
-      // ✅ This will invalidate ALL tokens
-      await this.refreshTokenIdsStorage.invalidate(user.id);
+      
+      await this.refreshTokenIdsStorage.invalidateAll(user.id);
     } else {
       throw new error('Refresh token invalid');
     }
@@ -153,7 +153,11 @@ async verifySignupOtp(dto: { challengeId: string; otp: string }) {
             },
         );
     }
-   async logout(userId: number): Promise<void> {
+   async logoutAll(userId: number): Promise<void> {
     await this.refreshTokenIdsStorage.invalidateAll(userId);
+  }
+
+  async logoutCurrent(userId: number, refreshTokenId: string): Promise<void> {
+    await this.refreshTokenIdsStorage.invalidateOne(userId, refreshTokenId);
   }
 }

@@ -59,11 +59,21 @@ export class AuthenticationController {
       return this.authService.verifySignupOtp(dto);
    }
 
-    @Post('logout')
+   @Post('logout')
+  @UseGuards(AuthenticationGuard)
+  async logout(@Req() req: Request) {
+    const userId = (req as any).user.id;
+    const refreshTokenId = (req as any).user.refreshTokenId; // Get from token
+    
+    await this.authService.logoutCurrent(userId, refreshTokenId);
+    return { message: 'Logged out from this device successfully' };
+  }
+
+    @Post('logout-all')
     @UseGuards(AuthenticationGuard)
-    async logout(@Req() req: Request) {
+    async logoutAll(@Req() req: Request) {
       const userId = (req as any).user.id;
-      await this.authService.logout(userId);
+      await this.authService.logoutAll(userId);
       return { message: 'Logged out from all device successfully' };
   }
 }
