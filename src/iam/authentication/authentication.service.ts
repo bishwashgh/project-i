@@ -105,36 +105,39 @@ async verifySignupOtp(dto: { challengeId: string; otp: string }) {
         return { accessToken, refreshToken, };
     }
 
-  async refreshTokens(refreshTokenDto: RefreshTokenDto){
-    try{
-          const { sub,refreshTokenId } = await this.jwtService.verifyAsync<
-          Pick<ActiveUserData, 'sub'> & {refreshTokenId: string}
-          >(refreshTokenDto.refreshToken,{
-            secret:this.jwtConfiguration.secret,
-            audience:this.jwtConfiguration.audience,
-            issuer:this.jwtConfiguration.issuer,
-          });
-          const user = await this.usersRepository.findOneByOrFail({
-            id:sub,
-          });
-          const isValid = await this.refreshTokenIdsStorage.validate(
-            user.id,
-            refreshTokenId,
-          );
-          if(isValid){
-            await this.refreshTokenIdsStorage.invalidate(user.id);
-          }else{
-            throw new error('Refresh token invalid');
-          }
-          return this.generateTokens(user);
-        }
-    catch(err){
-      if(err instanceof invalidatedRefreshTokenError){
-        throw new UnauthorizedException('Access denied');
-      }
-        throw new UnauthorizedException();
-     }
-   }
+ async refreshTokens(refreshTokenDto: RefreshTokenDto) {
+  try {
+    const { sub, refreshTokenId } = await this.jwtService.verifyAsync<
+      Pick<ActiveUserData, 'sub'> & { refreshTokenId: string }
+    >(refreshTokenDto.refreshToken, {
+      secret: this.jwtConfiguration.secret,
+      audience: this.jwtConfiguration.audience,
+      issuer: this.jwtConfiguration.issuer,
+    });
+
+    const user = await this.usersRepository.findOneByOrFail({
+      id: sub,
+    });
+
+    const isValid = await this.refreshTokenIdsStorage.validate(
+      user.id,
+      refreshTokenId,
+    );
+
+    if (isValid) {
+      // ✅ This will invalidate ALL tokens
+      await this.refreshTokenIdsStorage.invalidate(user.id);
+    } else {
+      throw new error('Refresh token invalid');
+    }
+    return this.generateTokens(user);
+  } catch (err) {
+    if (err instanceof invalidatedRefreshTokenError) {
+      throw new UnauthorizedException('Access denied');
+    }
+    throw new UnauthorizedException();
+  }
+}
 
     private async signToken<T>(userId: number,expiresIn: number,payload?: T) {
         return await this.jwtService.signAsync(
@@ -150,4 +153,7 @@ async verifySignupOtp(dto: { challengeId: string; otp: string }) {
             },
         );
     }
+   async logout(userId: number): Promise<void> {
+    await this.refreshTokenIdsStorage.invalidateAll(userId);
+  }
 }

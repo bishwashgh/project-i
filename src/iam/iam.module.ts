@@ -40,6 +40,7 @@ import { SessionAuthenticationController } from './authentication/sessionauth/se
     ConfigModule.forFeature(jwtConfig), 
     JwtModule.registerAsync(jwtConfig.asProvider()), 
     MailModule,
+    
   ],
   providers: [
     {

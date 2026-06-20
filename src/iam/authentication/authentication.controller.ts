@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
 import { SignUpDto } from './dto/sign-up.dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto/sign-in.dto';
@@ -11,12 +11,15 @@ import { OtpAuthenticationService } from './otp-gooleauthenticator/otp-authentic
 import type { Response } from 'express';
 import { toFileStream } from 'qrcode';
 import { VerifySignupOtpDto } from './dto/verify-signup-otp.dto';
+import { AuthenticationGuard } from './guards/authentication/authentication.guard';
+import { RefreshTokenIdsStorage } from './refresh-token-ids.storage/refresh-token-ids.storage';
+import { User } from 'src/users/entities/user.entity';
 
 
 @Auth(AuthType.None)
 @Controller('authentication')
 export class AuthenticationController {
-    constructor(private readonly authService:AuthenticationService,private readonly otpAuthService:OtpAuthenticationService,){}
+    constructor(private readonly authService:AuthenticationService,private readonly otpAuthService:OtpAuthenticationService,private refreshTokensIdsStorage:RefreshTokenIdsStorage){}
     
     @Post('sign-up')
     signUp(@Body() signUpDto:SignUpDto){
@@ -49,9 +52,19 @@ export class AuthenticationController {
     response.type('png');
     return toFileStream(response, uri);
    }
+
    @HttpCode(HttpStatus.OK)
    @Post('sign-up/verify')
    verifySignUpOtp(@Body() dto: VerifySignupOtpDto) {
       return this.authService.verifySignupOtp(dto);
    }
+
+    @Post('logout')
+    @UseGuards(AuthenticationGuard)
+    async logout(@Req() req: Request) {
+      const userId = (req as any).user.id;
+      await this.authService.logout(userId);
+      return { message: 'Logged out from all device successfully' };
+  }
 }
+
