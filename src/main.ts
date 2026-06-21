@@ -11,7 +11,14 @@ async function bootstrap() {
     transform: true,
     whitelist: true,
   }));
-  app.enableCors();
+   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'; // update for your frontend
+  app.enableCors({
+    origin: frontendUrl,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+    allowedHeaders: 'Content-Type, Authorization, Accept, X-Requested-With',
+    exposedHeaders: 'Authorization',
+  });
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
