@@ -11,13 +11,19 @@ async function bootstrap() {
     transform: true,
     whitelist: true,
   }));
-   const frontendUrl = process.env.FRONTEND_URL || 'https://eventmanagementsystem.bishwasghimire.com.np'; // update for your frontend
+  
+  const allowed = (process.env.FRONTEND_URLS || 'https://eventmanagementsystem.bishwashgimire.com.np,https://emsfrontend-a7l4p33fm-blueberry10.vercel.app')
+    .split(',');
   app.enableCors({
-    origin: frontendUrl,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true); // allow non-browser tools
+      if (allowed.indexOf(origin) !== -1) return callback(null, true);
+      callback(new Error('Not allowed by CORS'), false);
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
     allowedHeaders: 'Content-Type, Authorization, Accept, X-Requested-With',
-    exposedHeaders: 'Authorization',
+    credentials: true,
+    optionsSuccessStatus: 204,
   });
   await app.listen(process.env.PORT ?? 3000);
 }
