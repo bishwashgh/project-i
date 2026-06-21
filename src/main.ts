@@ -11,7 +11,7 @@ async function bootstrap() {
     transform: true,
     whitelist: true,
   }));
-   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'; // update for your frontend
+   const frontendUrl = process.env.FRONTEND_URL || 'https://eventmanagementsystem.bishwasghimire.com.np'; // update for your frontend
   app.enableCors({
     origin: frontendUrl,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
