@@ -941,7 +941,7 @@
   dependencies:
     "@tybys/wasm-util" "^0.10.2"
 
-"@nestjs/cli@^11.0.0":
+"@nestjs/cli@^11.0.23":
   version "11.0.23"
   resolved "https://registry.yarnpkg.com/@nestjs/cli/-/cli-11.0.23.tgz#ace0634d80ebbdbadd21c2cddffa450c62e41ea0"
   integrity sha512-2V0Bf5jz0KXhUZk3eJi9GljIyqH04otwsE/mYLbqJR+X0iiYx+6bkNJ2Qz28uHNFj1cpHgimf9xDzHkqarie0g==
