@@ -5,7 +5,7 @@ import { AuthenticationService } from '../authentication.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
-import { Role } from 'src/users/enums/role.enums'; // ✅ Import the Role enum
+import { Role } from 'src/users/enums/role.enums'; //Import the Role enum
 
 @Injectable()
 export class GoogleAuthenticationService implements OnModuleInit {
@@ -53,12 +53,12 @@ export class GoogleAuthenticationService implements OnModuleInit {
                     if (name) user.name = name;
                     await this.userRepository.save(user);
                 } else {
-                    // ✅ Create new user using new User() instead of create()
+                    // create new user using new User() instead of create()
                     const newUser = new User();
                     newUser.email = email;
                     newUser.googleId = googleId;
                     newUser.name = name || email.split('@')[0];
-                    newUser.role = Role.CUSTOMER; // ✅ Use the enum, not string
+                    newUser.role = Role.CUSTOMER; // Use the enum, not string
                     // No password for Google users
                     
                     user = await this.userRepository.save(newUser);
