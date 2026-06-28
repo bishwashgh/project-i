@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "types": ["node", "express", "passport"],
+    "types": ["node", "express"],
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "resolvePackageJsonExports": true,
