@@ -8,19 +8,30 @@ import { IamModule } from './iam/iam.module';
 import { ConfigModule } from '@nestjs/config';
 import { BookingsModule } from './bookings/bookings.module';
 import { PaymentsModule } from './payments/payments.module';
+import * as dotenv from 'dotenv';
 
-//Main Module  of the app
+dotenv.config();
+const isProduction = process.env.NODE_ENV === 'production';
+const databaseUrl = isProduction 
+  ? process.env.PROD_DATABASE_URL 
+  : process.env.DATABASE_URL;
+
 @Module({
-  imports: [ConfigModule.forRoot(
-    {
-      isGlobal: true ,
-    }
-  ),VenueModule, UsersModule,TypeOrmModule.forRoot({
-    type: 'postgres',
-    url:process.env.DATABASE_URL,
-    autoLoadEntities: true,
-    synchronize:true,
-  }), IamModule, BookingsModule, PaymentsModule
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    VenueModule,
+    UsersModule,
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      url: databaseUrl ,
+      autoLoadEntities: true,
+      synchronize: true,
+    }),
+    IamModule,
+    BookingsModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

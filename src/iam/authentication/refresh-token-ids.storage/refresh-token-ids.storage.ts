@@ -3,8 +3,9 @@ import {
   OnApplicationBootstrap,
   OnApplicationShutdown,
 } from '@nestjs/common';
+import * as dotenv from 'dotenv';
 import Redis from 'ioredis';
-
+dotenv.config();
 export class invalidatedRefreshTokenError extends Error {}
 
 @Injectable()
@@ -14,9 +15,10 @@ export class RefreshTokenIdsStorage
   private redisClient!: Redis;
   private readonly TOKEN_EXPIRY = 7 * 24 * 60 * 60; // 7 days
   private readonly MAX_DEVICES = 2; // Max 2 devices
-
+  
   onApplicationBootstrap() {
-    const redisUrl = process.env.REDIS_URL;
+    const isProduction = process.env.NODE_ENV === 'production';
+    const redisUrl = isProduction ? process.env.PROD_REDIS_URL : process.env.REDIS_URL;
     if (!redisUrl) {
       throw new Error('REDIS_URL is missing');
     }

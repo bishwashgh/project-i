@@ -48,7 +48,7 @@ async function bootstrap() {
   });
 
   // Handle preflight requests globally
-  app.options('*');
+  // app.options('*');
   
   // Serve static files
   app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
