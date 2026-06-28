@@ -11,6 +11,17 @@ import { Role } from 'src/users/enums/role.enums';
 export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
 
+    @Get()
+  async findAll(
+    @ActiveUser('sub') userId: number,
+    @ActiveUser('role') role: Role,
+  ) {
+    if (role === Role.ADMIN) {
+      return this.bookingsService.findAllAdmin();
+    }
+    return this.bookingsService.findAllForOwner(userId);
+  }
+  
   @Post()
   async create(@ActiveUser('sub') userId: number, @Body() dto: CreateBookingDto) {
     return this.bookingsService.create(userId, dto);

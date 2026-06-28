@@ -132,5 +132,54 @@ async findOneAdmin(bookingId: number) {
     },
   };
 }
+async findAllForOwner(userId: number) {
+    const bookings = await this.bookingsRepo.find({
+      where: { user: { id: userId } },
+      relations: { venue: true, user: true },
+      order: { createdAt: 'DESC' },
+    });
+
+    return bookings.map((booking) => ({
+      id: booking.id,
+      startDate: booking.startDate,
+      endDate: booking.endDate,
+      days: booking.days,
+      amount: booking.amount,
+      status: booking.status,
+      createdAt: booking.createdAt,
+      updatedAt: booking.updatedAt,
+      venue: booking.venue,
+      user: {
+        id: booking.user.id,
+        name: booking.user.name,
+        email: booking.user.email,
+      },
+    }));
+  }
+
+  // ✅ ADD THIS METHOD - Get all bookings for admin
+  async findAllAdmin() {
+    const bookings = await this.bookingsRepo.find({
+      relations: { venue: true, user: true },
+      order: { createdAt: 'DESC' },
+    });
+
+    return bookings.map((booking) => ({
+      id: booking.id,
+      startDate: booking.startDate,
+      endDate: booking.endDate,
+      days: booking.days,
+      amount: booking.amount,
+      status: booking.status,
+      createdAt: booking.createdAt,
+      updatedAt: booking.updatedAt,
+      venue: booking.venue,
+      user: {
+        id: booking.user.id,
+        name: booking.user.name,
+        email: booking.user.email,
+      },
+    }));
+  }
   
 }
