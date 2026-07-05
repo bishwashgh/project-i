@@ -112,6 +112,12 @@ export class GoogleAuthenticationService implements OnModuleInit {
             if (err instanceof Error) {
                 this.logger.error(`Error message: ${err.message}`);
                 this.logger.error(`Error stack: ${err.stack}`);
+
+                if (err instanceof UnauthorizedException) {
+                    throw err;
+                }
+
+                throw new UnauthorizedException(`Failed to authenticate with Google: ${err.message}`);
             }
             
             const pgUniqueViolationErrorCode = '23505';
