@@ -74,6 +74,7 @@ export class GoogleAuthenticationService implements OnModuleInit {
                     this.logger.log(`Updating existing user with googleId`);
                     user.googleId = googleId;
                     if (name) user.name = name;
+                    if (picture) user.profilePicture = picture;
                     await this.userRepository.save(user);
                     this.logger.log(`User updated successfully`);
                 } else {
@@ -83,6 +84,7 @@ export class GoogleAuthenticationService implements OnModuleInit {
                     newUser.email = email;
                     newUser.googleId = googleId;
                     newUser.name = name || email.split('@')[0];
+                    newUser.profilePicture = picture;
                     newUser.role = Role.CUSTOMER;
                     
                     user = await this.userRepository.save(newUser);
