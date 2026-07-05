@@ -13,6 +13,7 @@ export class GoogleAuthenticationService implements OnModuleInit {
     private oauthClient!: OAuth2Client;
     private googleClientId!: string;
     private readonly logger = new Logger(GoogleAuthenticationService.name);
+    private readonly googleUserInfoUrl = 'https://www.googleapis.com/oauth2/v2/userinfo';
 
     constructor(
         private readonly configService: ConfigService,
@@ -44,19 +45,7 @@ export class GoogleAuthenticationService implements OnModuleInit {
             }
 
             this.logger.log(' Starting Google authentication...');
-            
-            // Verify the Google token
-            const loginTicket = await Promise.race([
-                this.oauthClient.verifyIdToken({
-                    idToken: token,
-                    audience: this.googleClientId,
-                }),
-                new Promise<never>((_, reject) => {
-                    setTimeout(() => reject(new UnauthorizedException('Google token verification timed out')), 9000);
-                }),
-            ]);
-            
-            const payload = loginTicket.getPayload();
+            const payload = await this.resolveGooglePayload(token);
             
             if (!payload?.email || !payload.sub) {
                 this.logger.error(' Invalid Google token payload');
@@ -127,5 +116,63 @@ export class GoogleAuthenticationService implements OnModuleInit {
             
             throw new UnauthorizedException('Failed to authenticate with Google');
         }
+    }
+
+    private async resolveGooglePayload(token: string) {
+        if (token.split('.').length === 3) {
+            const loginTicket = await Promise.race([
+                this.oauthClient.verifyIdToken({
+                    idToken: token,
+                    audience: this.googleClientId,
+                }),
+                new Promise<never>((_, reject) => {
+                    setTimeout(() => reject(new UnauthorizedException('Google token verification timed out')), 9000);
+                }),
+            ]);
+
+            return loginTicket.getPayload();
+        }
+
+        this.logger.log(' Google access token detected, loading profile from Google userinfo endpoint');
+
+        const tokenInfo = await Promise.race([
+            this.oauthClient.getTokenInfo(token),
+            new Promise<never>((_, reject) => {
+                setTimeout(() => reject(new UnauthorizedException('Google access token verification timed out')), 9000);
+            }),
+        ]);
+
+        if (tokenInfo.aud !== this.googleClientId) {
+            throw new UnauthorizedException('Google token was issued for a different client');
+        }
+
+        const response = await Promise.race([
+            fetch(this.googleUserInfoUrl, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }),
+            new Promise<never>((_, reject) => {
+                setTimeout(() => reject(new UnauthorizedException('Google profile lookup timed out')), 9000);
+            }),
+        ]);
+
+        if (!response.ok) {
+            throw new UnauthorizedException('Failed to read Google profile');
+        }
+
+        const profile = await response.json() as {
+            email?: string;
+            id?: string;
+            name?: string;
+            picture?: string;
+        };
+
+        return {
+            email: profile.email,
+            sub: profile.id,
+            name: profile.name,
+            picture: profile.picture,
+        };
     }
 }
