@@ -32,6 +32,6 @@ export class User {
     googleId!: string;
 
     @Column({nullable: true})
-    profilePicture!: string;
+    profilePicture!: string | null;
 
 }

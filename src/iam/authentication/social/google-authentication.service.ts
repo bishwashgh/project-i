@@ -84,7 +84,7 @@ export class GoogleAuthenticationService implements OnModuleInit {
                     newUser.email = email;
                     newUser.googleId = googleId;
                     newUser.name = name || email.split('@')[0];
-                    newUser.profilePicture = picture;
+                    newUser.profilePicture = picture ?? null;
                     newUser.role = Role.CUSTOMER;
                     
                     user = await this.userRepository.save(newUser);
