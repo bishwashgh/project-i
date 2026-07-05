@@ -11,6 +11,7 @@ import { Role } from 'src/users/enums/role.enums';
 @Injectable()
 export class GoogleAuthenticationService implements OnModuleInit {
     private oauthClient!: OAuth2Client;
+    private googleClientId!: string;
     private readonly logger = new Logger(GoogleAuthenticationService.name);
 
     constructor(
@@ -28,21 +29,32 @@ export class GoogleAuthenticationService implements OnModuleInit {
         
         if (!clientId || !clientSecret) {
             this.logger.error('Google OAuth credentials are missing!');
-            return;
+            throw new Error('Google OAuth credentials are missing');
         }
         
+        this.googleClientId = clientId;
         this.oauthClient = new OAuth2Client(clientId, clientSecret);
         this.logger.log(' Google OAuth client initialized successfully');
     }
 
     async authenticate(token: string) {
         try {
+            if (!this.oauthClient || !this.googleClientId) {
+                throw new UnauthorizedException('Google authentication is not configured');
+            }
+
             this.logger.log(' Starting Google authentication...');
             
             // Verify the Google token
-            const loginTicket = await this.oauthClient.verifyIdToken({
-                idToken: token,
-            });
+            const loginTicket = await Promise.race([
+                this.oauthClient.verifyIdToken({
+                    idToken: token,
+                    audience: this.googleClientId,
+                }),
+                new Promise<never>((_, reject) => {
+                    setTimeout(() => reject(new UnauthorizedException('Google token verification timed out')), 9000);
+                }),
+            ]);
             
             const payload = loginTicket.getPayload();
             
