@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { Role } from 'src/users/enums/role.enums';
+import axios from 'axios';
 
 @Injectable()
 export class GoogleAuthenticationService implements OnModuleInit {
@@ -14,6 +15,7 @@ export class GoogleAuthenticationService implements OnModuleInit {
     private googleClientId!: string;
     private readonly logger = new Logger(GoogleAuthenticationService.name);
     private readonly googleUserInfoUrl = 'https://www.googleapis.com/oauth2/v2/userinfo';
+    private readonly requestTimeoutMs = 9000;
 
     constructor(
         private readonly configService: ConfigService,
@@ -120,53 +122,39 @@ export class GoogleAuthenticationService implements OnModuleInit {
 
     private async resolveGooglePayload(token: string) {
         if (token.split('.').length === 3) {
-            const loginTicket = await Promise.race([
+            const loginTicket = await this.withTimeout(
                 this.oauthClient.verifyIdToken({
                     idToken: token,
                     audience: this.googleClientId,
                 }),
-                new Promise<never>((_, reject) => {
-                    setTimeout(() => reject(new UnauthorizedException('Google token verification timed out')), 9000);
-                }),
-            ]);
+                'Google token verification timed out',
+            );
 
             return loginTicket.getPayload();
         }
 
         this.logger.log(' Google access token detected, loading profile from Google userinfo endpoint');
 
-        const tokenInfo = await Promise.race([
+        const tokenInfo = await this.withTimeout(
             this.oauthClient.getTokenInfo(token),
-            new Promise<never>((_, reject) => {
-                setTimeout(() => reject(new UnauthorizedException('Google access token verification timed out')), 9000);
-            }),
-        ]);
+            'Google access token verification timed out',
+        );
 
         if (tokenInfo.aud !== this.googleClientId) {
             throw new UnauthorizedException('Google token was issued for a different client');
         }
 
-        const response = await Promise.race([
-            fetch(this.googleUserInfoUrl, {
+        const response = await this.withTimeout(
+            axios.get<{ email?: string; id?: string; name?: string; picture?: string }>(this.googleUserInfoUrl, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
+                timeout: this.requestTimeoutMs,
             }),
-            new Promise<never>((_, reject) => {
-                setTimeout(() => reject(new UnauthorizedException('Google profile lookup timed out')), 9000);
-            }),
-        ]);
+            'Google profile lookup timed out',
+        );
 
-        if (!response.ok) {
-            throw new UnauthorizedException('Failed to read Google profile');
-        }
-
-        const profile = await response.json() as {
-            email?: string;
-            id?: string;
-            name?: string;
-            picture?: string;
-        };
+        const profile = response.data;
 
         return {
             email: profile.email,
@@ -174,5 +162,23 @@ export class GoogleAuthenticationService implements OnModuleInit {
             name: profile.name,
             picture: profile.picture,
         };
+    }
+
+    private async withTimeout<T>(promise: Promise<T>, errorMessage: string): Promise<T> {
+        let timeoutHandle: NodeJS.Timeout | undefined;
+
+        const timeoutPromise = new Promise<never>((_, reject) => {
+            timeoutHandle = setTimeout(() => {
+                reject(new UnauthorizedException(errorMessage));
+            }, this.requestTimeoutMs);
+        });
+
+        try {
+            return await Promise.race([promise, timeoutPromise]);
+        } finally {
+            if (timeoutHandle) {
+                clearTimeout(timeoutHandle);
+            }
+        }
     }
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
 import { GoogleAuthenticationService } from './google-authentication.service';
 import { GoogleTokenDto } from '../dto/google-token.dto';
 import { Auth } from '../decorators/auth.decorator';
@@ -13,7 +13,13 @@ export class GoogleAuthenticationController {
     ){}
 
     @Post()
-    authenticate(@Body() tokenDto:GoogleTokenDto){
-        return this.googleAuthService.authenticate(tokenDto.token);
+    authenticate(@Body() tokenDto: GoogleTokenDto) {
+        const token = tokenDto.credential ?? tokenDto.accessToken ?? tokenDto.token;
+
+        if (!token) {
+            throw new BadRequestException('Google credential or access token is required');
+        }
+
+        return this.googleAuthService.authenticate(token);
     }
 }
