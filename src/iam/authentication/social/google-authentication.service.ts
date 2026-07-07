@@ -15,7 +15,7 @@ export class GoogleAuthenticationService implements OnModuleInit {
     private googleClientId!: string;
     private readonly logger = new Logger(GoogleAuthenticationService.name);
     private readonly googleUserInfoUrl = 'https://www.googleapis.com/oauth2/v2/userinfo';
-    private readonly requestTimeoutMs = 9000;
+    private readonly requestTimeoutMs = 30000;
 
     constructor(
         private readonly configService: ConfigService,

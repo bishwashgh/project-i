@@ -85,7 +85,9 @@ export class IamModule implements NestModule {
         cookie: {
           sameSite:true,
           httpOnly:true,
+          maxAge: 5 * 24 * 60 * 60 * 1000,
         },
+        rolling: true,
       }),
       passport.initialize(),
       passport.session(),
